@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 380px;
+  min-height: 560px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.2), transparent 45%),
+    radial-gradient(circle at 20% 80%, rgba(22, 163, 74, 0.18), transparent 40%),
+    #f8fafc;
+  color: #0f172a;
+}
+
+#root {
+  width: 100%;
+  min-height: 560px;
+  padding: 14px;
+}
