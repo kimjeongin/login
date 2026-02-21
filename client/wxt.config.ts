@@ -8,7 +8,7 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
     key: fixedDevExtensionManifestKey,
-    permissions: ['identity'],
+    permissions: ['identity', 'storage'],
     host_permissions: [
       'http://localhost:8000/*',
       'http://127.0.0.1:8000/*',
