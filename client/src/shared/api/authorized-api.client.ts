@@ -1,6 +1,9 @@
-import { API_BASE_URL } from '../../shared/config/env';
-import { clearSession, ensureAccessToken, forceRefreshAccessToken } from './auth-session.service';
-import { createBackgroundError } from './errors';
+import { API_BASE_URL } from '../config/env';
+import {
+  ensureAccessToken,
+  forceRefreshAccessToken,
+} from '../../domains/auth/background/auth-session.service';
+import { createBackgroundError } from '../lib/messaging/background-errors';
 
 type JsonObject = Record<string, unknown>;
 
@@ -17,7 +20,7 @@ async function parseJsonResponse(response: Response): Promise<JsonObject> {
   }
 }
 
-function createErrorFromStatus(status: number, message: string) {
+function mapStatusToError(status: number, message: string) {
   if (status === 400) {
     return createBackgroundError('VALIDATION', message);
   }
@@ -33,27 +36,30 @@ function createErrorFromStatus(status: number, message: string) {
   return createBackgroundError('NETWORK', message);
 }
 
-function buildAuthHeaders(init: RequestInit, accessToken: string): Headers {
-  const headers = new Headers(init.headers);
+function buildAuthorizedHeaders(requestInit: RequestInit, accessToken: string): Headers {
+  const headers = new Headers(requestInit.headers);
   headers.set('Authorization', `Bearer ${accessToken}`);
-  if (init.body && !headers.has('Content-Type')) {
+  if (requestInit.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
   return headers;
 }
 
-async function fetchWithAccessToken(
+async function fetchAuthorized(
   path: string,
-  init: RequestInit,
+  requestInit: RequestInit,
   accessToken: string,
 ): Promise<Response> {
   return fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: buildAuthHeaders(init, accessToken),
+    ...requestInit,
+    headers: buildAuthorizedHeaders(requestInit, accessToken),
   });
 }
 
-export async function requestApiJson<T>(path: string, init: RequestInit): Promise<T> {
+export async function requestAuthorizedJson<T>(
+  path: string,
+  requestInit: RequestInit,
+): Promise<T> {
   let accessToken: string;
   try {
     accessToken = await ensureAccessToken();
@@ -63,7 +69,7 @@ export async function requestApiJson<T>(path: string, init: RequestInit): Promis
 
   let response: Response;
   try {
-    response = await fetchWithAccessToken(path, init, accessToken);
+    response = await fetchAuthorized(path, requestInit, accessToken);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Network request failed.';
     throw createBackgroundError('NETWORK', message);
@@ -72,9 +78,8 @@ export async function requestApiJson<T>(path: string, init: RequestInit): Promis
   if (response.status === 401) {
     try {
       accessToken = await forceRefreshAccessToken();
-      response = await fetchWithAccessToken(path, init, accessToken);
+      response = await fetchAuthorized(path, requestInit, accessToken);
     } catch {
-      await clearSession();
       throw createBackgroundError('AUTH_REQUIRED', 'Session expired. Please login again.');
     }
   }
@@ -86,11 +91,7 @@ export async function requestApiJson<T>(path: string, init: RequestInit): Promis
         ? body.detail
         : `Request failed with status ${response.status}`;
 
-    if (response.status === 401) {
-      await clearSession();
-    }
-
-    throw createErrorFromStatus(response.status, message);
+    throw mapStatusToError(response.status, message);
   }
 
   return body as T;

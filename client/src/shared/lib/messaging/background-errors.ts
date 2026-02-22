@@ -3,7 +3,7 @@ import type {
   AppErrorPayload,
   MessageFailure,
   MessageSuccess,
-} from '../../shared/lib/messaging/contracts';
+} from './base-contracts';
 
 export class BackgroundError extends Error {
   code: AppErrorCode;

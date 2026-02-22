@@ -1,45 +1,19 @@
-import type { SessionView } from '../../../entities/auth/model/types';
-import type { Project, ProjectCreatePayload } from '../../../entities/project/model/types';
+import type {
+  AuthMessage,
+  AuthMessageResultMap,
+} from '../../../domains/auth/messaging/auth.contracts';
+import type {
+  ProjectMessage,
+  ProjectMessageResultMap,
+} from '../../../domains/projects/messaging/project.contracts';
 
-export type AppErrorCode =
-  | 'AUTH_REQUIRED'
-  | 'AUTH_FAILED'
-  | 'FORBIDDEN'
-  | 'NETWORK'
-  | 'VALIDATION'
-  | 'FORBIDDEN_CONTEXT';
+export * from './base-contracts';
+export * from '../../../domains/auth/messaging/auth.contracts';
+export * from '../../../domains/projects/messaging/project.contracts';
 
-export interface AppErrorPayload {
-  code: AppErrorCode;
-  message: string;
-}
+export type ExtensionMessage = AuthMessage | ProjectMessage;
 
-export type MessageSuccess<T> = {
-  ok: true;
-  data: T;
-};
-
-export type MessageFailure = {
-  ok: false;
-  error: AppErrorPayload;
-};
-
-export type MessageResponse<T> = MessageSuccess<T> | MessageFailure;
-
-export type ExtensionMessage =
-  | { type: 'AUTH_LOGIN' }
-  | { type: 'AUTH_LOGOUT' }
-  | { type: 'AUTH_GET_SESSION' }
-  | { type: 'PROJECT_LIST' }
-  | { type: 'PROJECT_CREATE'; payload: ProjectCreatePayload };
-
-export interface MessageResultMap {
-  AUTH_LOGIN: SessionView;
-  AUTH_LOGOUT: { ok: true };
-  AUTH_GET_SESSION: SessionView;
-  PROJECT_LIST: Project[];
-  PROJECT_CREATE: Project;
-}
+export type MessageResultMap = AuthMessageResultMap & ProjectMessageResultMap;
 
 export type MessageByType<T extends keyof MessageResultMap> = Extract<
   ExtensionMessage,

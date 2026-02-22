@@ -1,10 +1,10 @@
-import type { AuthTokens } from '../../entities/auth/model/types';
+import type { AuthTokens } from '../../../entities/auth/model/types';
 import {
   KEYCLOAK_AUTH_URL,
   KEYCLOAK_CLIENT_ID,
   KEYCLOAK_TOKEN_URL,
-} from '../../shared/config/env';
-import { createBackgroundError } from './errors';
+} from '../../../shared/config/env';
+import { createBackgroundError } from '../../../shared/lib/messaging/background-errors';
 
 function base64UrlEncode(bytes: Uint8Array): string {
   let binary = '';

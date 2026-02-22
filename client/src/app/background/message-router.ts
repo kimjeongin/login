@@ -1,38 +1,25 @@
-import type { ProjectCreatePayload } from '../../entities/project/model/types';
 import type {
   ExtensionMessage,
   MessageResponse,
 } from '../../shared/lib/messaging/contracts';
+import { clearSession } from '../../domains/auth/background/auth-session.service';
+import { createAuthHandlers } from '../../domains/auth/background/handlers/auth-handlers';
+import { createAuthMessageValidators } from '../../domains/auth/messaging/auth-message.validators';
 import {
-  clearSession,
-  getSessionView,
-  loginSession,
-  logoutSession,
-} from './auth-session.service';
-import { createBackgroundError, failure, success, toAppError } from './errors';
-import { createProject, listProjects } from './project-api.proxy';
+  createProjectHandlers,
+} from '../../domains/projects/background/handlers/project-handlers';
+import { createProjectMessageValidators } from '../../domains/projects/messaging/project-message.validators';
+import {
+  failure,
+  toAppError,
+} from '../../shared/lib/messaging/background-errors';
+import type {
+  MessageValidators,
+  RouterHandlers,
+} from '../../shared/lib/messaging/router.types';
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
-}
-
-function isProjectCreatePayload(value: unknown): value is ProjectCreatePayload {
-  if (!isObject(value)) {
-    return false;
-  }
-
-  if (typeof value.name !== 'string') {
-    return false;
-  }
-
-  if (
-    typeof value.description !== 'undefined' &&
-    typeof value.description !== 'string'
-  ) {
-    return false;
-  }
-
-  return true;
 }
 
 function isExtensionMessage(value: unknown): value is ExtensionMessage {
@@ -40,17 +27,13 @@ function isExtensionMessage(value: unknown): value is ExtensionMessage {
     return false;
   }
 
-  switch (value.type) {
-    case 'AUTH_LOGIN':
-    case 'AUTH_LOGOUT':
-    case 'AUTH_GET_SESSION':
-    case 'PROJECT_LIST':
-      return true;
-    case 'PROJECT_CREATE':
-      return isProjectCreatePayload(value.payload);
-    default:
-      return false;
+  const validator =
+    messageValidators[value.type as ExtensionMessage['type']];
+  if (!validator) {
+    return false;
   }
+
+  return validator(value);
 }
 
 function isTrustedSender(sender: Browser.runtime.MessageSender): boolean {
@@ -74,48 +57,14 @@ function isLoginAllowedSender(sender: Browser.runtime.MessageSender): boolean {
   return isExtensionPageSender(sender) || isContentScriptSender(sender);
 }
 
-type RouterHandler = (
-  message: ExtensionMessage,
-  sender: Browser.runtime.MessageSender,
-) => Promise<MessageResponse<unknown>>;
+const handlers: RouterHandlers = {
+  ...createAuthHandlers({ isLoginAllowedSender }),
+  ...createProjectHandlers(),
+};
 
-const handlers: Record<ExtensionMessage['type'], RouterHandler> = {
-  AUTH_LOGIN: async (_message, sender) => {
-    if (!isLoginAllowedSender(sender)) {
-      return failure(
-        'FORBIDDEN_CONTEXT',
-        'Login is only allowed from extension pages or content scripts.',
-      );
-    }
-    return success(await loginSession());
-  },
-  AUTH_LOGOUT: async () => {
-    await logoutSession();
-    return success({ ok: true });
-  },
-  AUTH_GET_SESSION: async () => {
-    return success(await getSessionView());
-  },
-  PROJECT_LIST: async () => {
-    return success(await listProjects());
-  },
-  PROJECT_CREATE: async (message) => {
-    const createMessage = message as Extract<
-      ExtensionMessage,
-      { type: 'PROJECT_CREATE' }
-    >;
-    const name = createMessage.payload.name.trim();
-    if (!name) {
-      throw createBackgroundError('VALIDATION', 'Project name is required.');
-    }
-
-    const payload: ProjectCreatePayload = {
-      name,
-      description: createMessage.payload.description?.trim(),
-    };
-
-    return success(await createProject(payload));
-  },
+const messageValidators: MessageValidators = {
+  ...createAuthMessageValidators(),
+  ...createProjectMessageValidators(),
 };
 
 async function handleMessage(

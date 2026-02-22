@@ -6,8 +6,8 @@ import type {
 } from '../../../entities/project/model/types';
 import {
   MessagingClientError,
-  projectCreate,
-  projectList,
+  requestProjectCreate,
+  requestProjectList,
 } from '../../../shared/lib/messaging/client';
 import {
   Card,
@@ -57,7 +57,7 @@ export function ProjectDashboard() {
     setIsProjectsLoading(true);
 
     try {
-      const items = await projectList();
+      const items = await requestProjectList();
       setProjects(items);
     } catch (error) {
       await handleAuthError(error, '프로젝트 목록을 불러오지 못했습니다.');
@@ -72,7 +72,7 @@ export function ProjectDashboard() {
       setIsProjectSubmitting(true);
 
       try {
-        const created = await projectCreate(payload);
+        const created = await requestProjectCreate(payload);
         setProjects((previous) => [created, ...previous]);
       } catch (error) {
         await handleAuthError(error, '프로젝트를 등록하지 못했습니다.');

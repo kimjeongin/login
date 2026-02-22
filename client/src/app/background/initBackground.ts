@@ -1,4 +1,4 @@
-import { initializeSessionStoragePolicy } from './auth-session.service';
+import { initializeSessionStoragePolicy } from '../../domains/auth/background/auth-session.service';
 import { registerMessageRouter } from './message-router';
 
 type SidePanelApi = {

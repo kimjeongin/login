@@ -1,74 +1,114 @@
-# Server (FastAPI + Keycloak JWKS Validation)
+# Server
 
-브라우저 익스텐션용 프로젝트 API 서버입니다.
+FastAPI 기반 API 서버입니다.  
+Keycloak access token을 검증하고 `active` role 권한을 확인한 뒤 프로젝트 API를 제공합니다.
 
-## API
-- `GET /health`
-- `GET /api/projects` (인증 + 권한 필요)
-- `POST /api/projects` (인증 + 권한 필요)
-
-## 아키텍처
-도메인 기준으로 모듈을 분리했습니다.
-
-```text
-app/
-  api/
-    router.py                       # API 라우터 조합
-  core/
-    settings.py                     # 환경설정 모델
-    dependencies.py                 # DI provider(lru_cache 싱글톤)
-  auth/
-    domain/
-      principal.py                  # 인증된 사용자 모델
-      access_policy.py              # active role 기반 접근 정책
-      exceptions.py                 # 도메인 예외
-    infrastructure/
-      keycloak_token_verifier.py    # OIDC/JWKS 조회 + JWT 검증
-    services/
-      auth_service.py               # 인증/인가 유즈케이스
-    presentation/
-      dependencies.py               # FastAPI Depends(Security) 어댑터
-  projects/
-    domain/
-      models.py                     # Project 엔티티
-      repositories.py               # 저장소 인터페이스(Protocol)
-    infrastructure/
-      in_memory_project_repository.py
-    services/
-      project_service.py            # 프로젝트 유즈케이스
-    presentation/
-      schemas.py                    # 요청/응답 스키마
-      router.py                     # /projects 엔드포인트
-  main.py                           # 앱 팩토리 및 미들웨어
+## 실행
+```bash
+cp .env.example .env
+uv sync
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
-## 인증/권한 흐름
-1. 클라이언트가 Keycloak에서 access token을 직접 발급
-2. 서버는 `Authorization: Bearer <token>`을 수신
-3. `KeycloakTokenVerifier`가 OIDC config/JWKS를 가져와 서명/issuer 검증
-4. `AuthenticatedPrincipal`로 claims를 정규화 (groups/roles/active)
-5. `ExtensionAccessPolicy`가 접근 정책 검증
-
-`/api/projects` 접근 조건:
-- `active` role이 있어야 함
-
 ## 환경변수
-`.env.example`를 기반으로 `.env` 파일을 준비하세요.
-
-```bash
+```env
 KEYCLOAK_BASE_URL=http://localhost:8080
 KEYCLOAK_REALM=test
 KEYCLOAK_EXPECTED_AUDIENCE=extension-client
 KEYCLOAK_VERIFY_SSL=false
 KEYCLOAK_JWKS_CACHE_TTL_SECONDS=300
+EXTENSION_REQUIRED_ROLE=active
 CORS_ALLOW_ORIGINS=*
 API_PREFIX=/api
 ```
 
-`KEYCLOAK_EXPECTED_AUDIENCE`를 비우면 audience 검증은 비활성화됩니다.
+- `KEYCLOAK_EXPECTED_AUDIENCE`가 비어 있으면 audience 검증을 비활성화합니다.
+- `KEYCLOAK_JWKS_CACHE_TTL_SECONDS` 기본값은 300초이며 최소 30초입니다.
 
-## 실행
-```bash
-uv sync
-uv run uvicorn app.main:app --reload --port 8000
+## API
+- `GET /health`
+- `GET /api/projects` (인증 + `active` role 필요)
+- `POST /api/projects` (인증 + `active` role 필요)
+
+## 모듈 구조
+```text
+app/
+  main.py
+  api/router.py
+  core/
+    settings.py
+    dependencies.py
+  auth/
+    domain/
+      principal.py
+      access_policy.py
+      exceptions.py
+    infrastructure/keycloak_token_verifier.py
+    services/auth_service.py
+    presentation/
+      dependencies.py
+      http_errors.py
+  projects/
+    domain/
+      models.py
+      repositories.py
+    infrastructure/in_memory_project_repository.py
+    services/project_service.py
+    presentation/
+      schemas.py
+      router.py
 ```
+
+## Login/Auth Flow (서버 측 상세)
+### 1) 요청 진입
+1. 클라이언트가 `Authorization: Bearer <access_token>`으로 `/api/projects` 요청
+2. `HTTPBearer(auto_error=False)`가 헤더에서 bearer credentials를 읽음
+3. 헤더가 없거나 scheme이 `Bearer`가 아니면 `401`
+
+### 2) 토큰 검증 (`KeycloakTokenVerifier`)
+1. JWT header에서 `kid`를 읽음
+2. OIDC 설정(`/.well-known/openid-configuration`)을 조회해 `jwks_uri` 확보
+3. JWKS를 조회하고 캐시(TTL) 사용
+4. `jwt.decode` 검증 조건
+- 알고리즘: `RS256`
+- issuer: `KEYCLOAK_BASE_URL/realms/KEYCLOAK_REALM`
+- audience: `KEYCLOAK_EXPECTED_AUDIENCE` (값이 있을 때만)
+5. 실패 시 JWKS를 강제 갱신해 1회 재시도 (Key rotation 대응)
+6. 최종 실패 시 `401`
+
+### 3) Principal 구성
+1. `sub` 클레임이 없으면 `401`
+2. `preferred_username`를 사용자명으로 사용
+3. roles 추출 규칙
+- `azp`가 있으면 `resource_access[azp].roles` 우선 사용
+- 없으면 `resource_access`의 모든 client role 병합
+4. groups는 `groups` 클레임에서 문자열만 수집
+
+### 4) 권한 검증
+1. `ExtensionAccessPolicy(required_role=EXTENSION_REQUIRED_ROLE)` 적용
+2. principal에 설정된 role이 없으면 `403`
+
+### 5) 비즈니스 처리
+1. `current_principal.subject`를 owner로 사용
+2. `ProjectService`가 목록 조회/생성 수행
+3. 저장소는 `InMemoryProjectRepository` 사용
+
+### 6) 응답/오류 변환
+- `UnauthorizedError` -> `401`
+- `ForbiddenError` -> `403`
+- `IdentityProviderUnavailableError` -> `503`
+- 프로젝트 생성 시 `ValueError` -> `400`
+
+## 프로젝트 API 동작
+### GET `/api/projects`
+- owner(subject) 기준 목록 반환
+- 응답: `{ "items": [ProjectResponse, ...] }`
+
+### POST `/api/projects`
+- 요청: `name(필수, 1~120)`, `description(선택, 최대 500)`
+- description이 빈 문자열이면 `null`로 정규화
+- owner(subject) 기준으로 프로젝트 생성 후 반환
+
+## 현재 제약
+- 저장소가 메모리 기반이라 서버 재시작 시 데이터가 사라집니다.
+- 권한 정책이 `active` role 하나로 고정되어 있습니다.

@@ -1,12 +1,12 @@
 import type { SessionView } from '@/src/entities/auth/model/types';
 import type { Project } from '@/src/entities/project/model/types';
 import {
-  authGetSession,
-  authLogin,
-  authLogout,
   MessagingClientError,
-  projectCreate,
-  projectList,
+  requestAuthLogin,
+  requestAuthLogout,
+  requestAuthSession,
+  requestProjectCreate,
+  requestProjectList,
 } from '@/src/shared/lib/messaging/client';
 
 const WIDGET_HOST_ID = 'project-content-widget-host';
@@ -242,7 +242,7 @@ class ProjectContentWidget {
     this.render();
 
     try {
-      const session = await authGetSession();
+      const session = await requestAuthSession();
       this.state.session = session;
       if (!session.isAuthenticated) {
         this.state.mode = 'login';
@@ -272,7 +272,7 @@ class ProjectContentWidget {
     this.render();
 
     try {
-      const items = await projectList();
+      const items = await requestProjectList();
       this.state.projects = items;
       this.state.mode = 'ready';
     } catch (error) {
@@ -308,7 +308,7 @@ class ProjectContentWidget {
     this.render();
 
     try {
-      const session = await authLogin();
+      const session = await requestAuthLogin();
       this.state.session = session;
     } catch (error) {
       this.state.mode = 'login';
@@ -327,7 +327,7 @@ class ProjectContentWidget {
     this.render();
 
     try {
-      await authLogout();
+      await requestAuthLogout();
       this.state.session = loggedOutSession;
       this.state.projects = [];
       this.state.error = null;
@@ -351,7 +351,7 @@ class ProjectContentWidget {
     this.render();
 
     try {
-      const created = await projectCreate({ name });
+      const created = await requestProjectCreate({ name });
       this.state.projects = [created, ...this.state.projects];
       this.state.draftName = '';
       this.state.mode = 'ready';

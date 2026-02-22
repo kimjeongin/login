@@ -10,10 +10,10 @@ import {
 
 import type { SessionView } from '../../entities/auth/model/types';
 import {
-  authGetSession,
-  authLogin,
-  authLogout,
   MessagingClientError,
+  requestAuthLogin,
+  requestAuthLogout,
+  requestAuthSession,
 } from '../../shared/lib/messaging/client';
 
 type AuthContextValue = {
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshSession = useCallback(async () => {
     try {
-      const next = await authGetSession();
+      const next = await requestAuthSession();
       setSession(next);
       if (!next.isAuthenticated) {
         setError(null);
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsWorking(true);
     setError(null);
     try {
-      const next = await authLogin();
+      const next = await requestAuthLogin();
       setSession(next);
     } catch (err) {
       setSession(loggedOutSession);
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsWorking(true);
     setError(null);
     try {
-      await authLogout();
+      await requestAuthLogout();
       setSession(loggedOutSession);
     } catch (err) {
       setError(toMessage(err, '로그아웃에 실패했습니다.'));

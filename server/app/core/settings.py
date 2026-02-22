@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     keycloak_expected_audience: str = Field(default="")
     keycloak_verify_ssl: bool = Field(default=False)
     keycloak_jwks_cache_ttl_seconds: int = Field(default=300, ge=30)
+    extension_required_role: str = Field(default="active")
 
     cors_allow_origins: str = Field(default="*")
 
@@ -36,6 +37,10 @@ class Settings(BaseSettings):
         if not audience:
             return None
         return audience
+
+    @property
+    def required_extension_role(self) -> str:
+        return self.extension_required_role.strip()
 
     def cors_origins(self) -> list[str]:
         raw = self.cors_allow_origins.strip()

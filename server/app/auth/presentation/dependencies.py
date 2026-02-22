@@ -1,6 +1,7 @@
 from fastapi import Depends, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.auth.dependencies import get_auth_service
 from app.auth.domain.exceptions import (
     AuthError,
     UnauthorizedError,
@@ -8,7 +9,6 @@ from app.auth.domain.exceptions import (
 from app.auth.domain.principal import AuthenticatedPrincipal
 from app.auth.presentation.http_errors import to_http_exception
 from app.auth.services.auth_service import AuthService
-from app.core.dependencies import get_auth_service
 
 bearer_scheme = HTTPBearer(auto_error=False)
 

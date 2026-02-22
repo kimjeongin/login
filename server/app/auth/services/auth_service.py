@@ -1,12 +1,12 @@
 from app.auth.domain.access_policy import ExtensionAccessPolicy
 from app.auth.domain.principal import AuthenticatedPrincipal
-from app.auth.infrastructure.keycloak_token_verifier import KeycloakTokenVerifier
+from app.auth.domain.token_verifier import TokenVerifier
 
 
 class AuthService:
     def __init__(
         self,
-        token_verifier: KeycloakTokenVerifier,
+        token_verifier: TokenVerifier,
         access_policy: ExtensionAccessPolicy,
     ) -> None:
         self._token_verifier = token_verifier
@@ -17,4 +17,3 @@ class AuthService:
 
     def authorize_extension_user(self, principal: AuthenticatedPrincipal) -> None:
         self._access_policy.ensure_active_extension_user(principal)
-
