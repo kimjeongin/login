@@ -125,3 +125,6 @@ WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
 2. 인증 후 위 endpoint 호출 시 card JSON 수신
 3. 인증 후 `POST /api/chat/a2a/<handler>`로 `tasks/send` 호출 시 task id 수신
 4. `tasks/get`에서 `completed` + artifact text 확인
+
+## 6) 함께 보면 좋은 문서
+- `sse-auth-copy-paste.md` (EventSource + 인증 이식)

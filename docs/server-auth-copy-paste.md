@@ -108,3 +108,8 @@ app.mount(f"{settings.api_prefix}/chat/a2a", create_chat_a2a_app(settings))
 다른 프로젝트로 A2A 인증 구현을 옮길 때는 아래 문서를 함께 참고합니다.
 
 - `a2a-auth-copy-paste.md`
+
+## 9) SSE 인증 이식
+브라우저 제어처럼 SSE endpoint + action endpoint 인증 구조를 옮길 때는 아래 문서를 함께 참고합니다.
+
+- `sse-auth-copy-paste.md`

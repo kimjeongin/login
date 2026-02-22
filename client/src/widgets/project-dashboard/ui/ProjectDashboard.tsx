@@ -21,9 +21,10 @@ import { LogoutButton } from '../../../features/auth/logout/ui/LogoutButton';
 import { ProjectCreateForm } from '../../../features/project/create/ui/ProjectCreateForm';
 import { ProjectList } from '../../../features/project/list/ui/ProjectList';
 import { Button } from '../../../shared/ui/button';
+import { BrowserControlPanel } from '../../browser-control-panel/ui/BrowserControlPanel';
 import { ChatPanel } from '../../chat-panel/ui/ChatPanel';
 
-type WorkspaceTab = 'projects' | 'chat';
+type WorkspaceTab = 'projects' | 'chat' | 'browser-control';
 
 function toMessage(error: unknown, fallback: string): string {
   if (error instanceof MessagingClientError) {
@@ -116,7 +117,7 @@ export function ProjectDashboard() {
       </Card>
 
       <Card>
-        <CardContent className="grid grid-cols-2 gap-2 pt-4">
+        <CardContent className="grid grid-cols-3 gap-2 pt-4">
           <Button
             variant={activeTab === 'projects' ? 'default' : 'secondary'}
             onClick={() => setActiveTab('projects')}
@@ -130,6 +131,13 @@ export function ProjectDashboard() {
             size="sm"
           >
             채팅
+          </Button>
+          <Button
+            variant={activeTab === 'browser-control' ? 'default' : 'secondary'}
+            onClick={() => setActiveTab('browser-control')}
+            size="sm"
+          >
+            브라우저 제어
           </Button>
         </CardContent>
       </Card>
@@ -148,8 +156,10 @@ export function ProjectDashboard() {
             onRefresh={loadProjects}
           />
         </>
-      ) : (
+      ) : activeTab === 'chat' ? (
         <ChatPanel onAuthRequired={refreshSession} />
+      ) : (
+        <BrowserControlPanel onAuthRequired={refreshSession} />
       )}
     </div>
   );

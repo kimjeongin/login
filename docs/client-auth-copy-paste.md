@@ -92,3 +92,8 @@ import {
 A2A 채팅까지 다른 프로젝트로 옮길 때는 아래 문서를 함께 참고합니다.
 
 - `a2a-auth-copy-paste.md`
+
+## 9) SSE 인증 이식
+브라우저 제어처럼 EventSource 기반 실시간 기능까지 옮길 때는 아래 문서를 함께 참고합니다.
+
+- `sse-auth-copy-paste.md`

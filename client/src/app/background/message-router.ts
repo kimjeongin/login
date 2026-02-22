@@ -5,6 +5,8 @@ import type {
 import { clearSession } from '../../domains/auth/background/auth-session.service';
 import { createAuthHandlers } from '../../domains/auth/background/handlers/auth-handlers';
 import { createAuthMessageValidators } from '../../domains/auth/messaging/auth-message.validators';
+import { createBrowserControlHandlers } from '../../domains/browser-control/background/handlers/browser-control-handlers';
+import { createBrowserControlMessageValidators } from '../../domains/browser-control/messaging/browser-control-message.validators';
 import { createChatHandlers } from '../../domains/chat/background/handlers/chat-handlers';
 import { createChatMessageValidators } from '../../domains/chat/messaging/chat-message.validators';
 import {
@@ -61,12 +63,14 @@ function isLoginAllowedSender(sender: Browser.runtime.MessageSender): boolean {
 
 const handlers: RouterHandlers = {
   ...createAuthHandlers({ isLoginAllowedSender }),
+  ...createBrowserControlHandlers(),
   ...createChatHandlers(),
   ...createProjectHandlers(),
 };
 
 const messageValidators: MessageValidators = {
   ...createAuthMessageValidators(),
+  ...createBrowserControlMessageValidators(),
   ...createChatMessageValidators(),
   ...createProjectMessageValidators(),
 };

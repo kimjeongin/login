@@ -7,6 +7,7 @@ Keycloak 로그인 후 브라우저 확장(`client/`)이 FastAPI 서버(`server/
 - `client/`: WXT + React 기반 확장 (sidepanel + content widget)
 - `server/`: FastAPI API 서버
 - `chat`: A2A(`@a2a-js/sdk` + `a2a-server`) + LangChain/Ollama 연동
+- `browser-control`: 인증된 SSE + action POST 데모
 - Keycloak: OIDC provider
 
 ## 빠른 실행
@@ -67,6 +68,19 @@ pnpm dev
 
 두 엔드포인트 모두 인증 토큰이 필요합니다.
 
+## Browser Control SSE Flow 요약
+1. Sidepanel의 `브라우저 제어` 탭에서 `시작` 버튼을 누르면 background에서 access token을 가져옵니다.
+2. Sidepanel은 `EventSourcePolyfill`로 `GET /api/browser-control/events`를 열고, `Authorization: Bearer` 헤더로 인증합니다.
+3. 사용자가 `click` / `popup` / `close` 버튼을 누르면 background가 `POST /api/browser-control/actions`로 전송합니다.
+4. 서버는 현재 사용자 subject 채널로 action 이벤트를 publish하고, 열린 SSE 연결로 다시 push합니다.
+5. Sidepanel은 SSE 이벤트를 수신해 화면에 로그를 표시합니다.
+
+## Browser Control 엔드포인트
+- SSE: `GET /api/browser-control/events`
+- Action dispatch: `POST /api/browser-control/actions`
+
+두 엔드포인트 모두 인증 토큰이 필요합니다.
+
 ## 토큰 사용 원칙
 - 서버 인증/인가: **access token만 사용**
 - refresh token: background에서 access token 재발급용으로만 사용
@@ -78,3 +92,4 @@ pnpm dev
 - 복사-붙여넣기 이식 가이드(클라이언트): `docs/client-auth-copy-paste.md`
 - 복사-붙여넣기 이식 가이드(서버): `docs/server-auth-copy-paste.md`
 - 복사-붙여넣기 이식 가이드(A2A + 인증): `docs/a2a-auth-copy-paste.md`
+- 복사-붙여넣기 이식 가이드(SSE + 인증): `docs/sse-auth-copy-paste.md`

@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from app.browser_control.services.browser_control_event_service import BrowserControlEventService
 from app.core.settings import Settings
 from app.projects.infrastructure.in_memory_project_repository import InMemoryProjectRepository
 from app.projects.services.project_service import ProjectService
@@ -18,3 +19,8 @@ def get_project_repository() -> InMemoryProjectRepository:
 @lru_cache
 def get_project_service() -> ProjectService:
     return ProjectService(repository=get_project_repository())
+
+
+@lru_cache
+def get_browser_control_event_service() -> BrowserControlEventService:
+    return BrowserControlEventService()

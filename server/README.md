@@ -38,6 +38,8 @@ CHAT_HISTORY_MAX_MESSAGES=12
 - `POST /api/projects` (인증 + `active` role 필요)
 - `GET /api/chat/a2a/<handler>/.well-known/agent.json` (인증 + `active` role 필요)
 - `POST /api/chat/a2a/<handler>` (`tasks/send`, `tasks/get` 등 A2A RPC, 인증 + `active` role 필요)
+- `GET /api/browser-control/events` (SSE, 인증 + `active` role 필요)
+- `POST /api/browser-control/actions` (`click|popup|close`, 인증 + `active` role 필요)
 
 ## 모듈 구조
 ```text
@@ -57,6 +59,12 @@ app/
     presentation/
       dependencies.py
       http_errors.py
+  browser_control/
+    services/
+      browser_control_event_service.py
+    presentation/
+      schemas.py
+      router.py
   chat/
     infrastructure/
       a2a_app_factory.py
