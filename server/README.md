@@ -24,6 +24,7 @@ API_PREFIX=/api
 
 - `KEYCLOAK_EXPECTED_AUDIENCE`가 비어 있으면 audience 검증을 비활성화합니다.
 - `KEYCLOAK_JWKS_CACHE_TTL_SECONDS` 기본값은 300초이며 최소 30초입니다.
+- `AUTH_REQUIRED_ROLE`은 기존 `EXTENSION_REQUIRED_ROLE` 이름도 호환됩니다.
 
 ## API
 - `GET /health`
@@ -112,3 +113,7 @@ app/
 ## 현재 제약
 - 저장소가 메모리 기반이라 서버 재시작 시 데이터가 사라집니다.
 - 권한 정책이 `active` role 하나로 고정되어 있습니다.
+
+## 참고
+- 서버 인증/인가는 access token만 사용합니다.
+- 이식 가이드는 `../docs/server-auth-copy-paste.md`를 참고하세요.

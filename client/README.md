@@ -23,13 +23,13 @@ WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
 
 ## 구성
 - `entrypoints/background.ts`: background 시작점
-- `src/app/background/*`: background 오케스트레이션(초기화, 메시지 라우터, 공통 에러)
-- `src/domains/auth/*`: 인증 도메인(OAuth, 세션, auth 핸들러, auth 메시지)
-- `src/domains/projects/*`: 프로젝트 도메인(API 클라이언트, project 핸들러, project 메시지)
+- `src/app/background/*`: background 오케스트레이션(초기화, 메시지 라우터)
+- `src/domains/auth/*`: 인증 도메인(OAuth, 세션, 핸들러, 메시지 계약/클라이언트, validator)
+- `src/domains/projects/*`: 프로젝트 도메인(API, 핸들러, 메시지 계약/클라이언트, validator)
 - `src/shared/api/*`: 공통 API 호출 유틸(`requestAuthorizedJson`)
-- `entrypoints/sidepanel/*`: React UI (AuthProvider + AuthGate + ProjectDashboard)
-- `entrypoints/content.ts`: content script 위젯
-- `src/shared/lib/messaging/*`: 메시지 공통 타입/런타임 및 통합 export
+- `src/shared/lib/messaging/*`: 메시지 공통 타입/런타임/에러 유틸
+- `entrypoints/sidepanel/*`: React UI
+- `entrypoints/content.ts`: content widget
 
 ## 런타임 경계
 - sidepanel/content는 토큰을 직접 저장하거나 서버를 직접 호출하지 않습니다.
@@ -101,6 +101,11 @@ WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
 2. background가 access token 메모리/refresh token 저장소를 모두 삭제
 3. UI가 로그아웃 상태로 전환
 
+## 토큰 사용 원칙
+- 서버 호출 인증: access token만 사용
+- refresh token: background에서 재발급용으로만 사용
+- id token: 현재 인증 로직에서 사용하지 않음
+
 ## 에러 코드
 - `AUTH_REQUIRED`: 로그인 필요, refresh 실패
 - `AUTH_FAILED`: Keycloak 인증 실패/취소/state 검증 실패
@@ -112,3 +117,4 @@ WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
 ## 참고
 - `wxt.config.ts`의 `manifest.key`가 고정되어 extension id가 안정적으로 유지됩니다.
 - Keycloak Redirect URI는 `https://<EXTENSION_ID>.chromiumapp.org/*`로 설정해야 합니다.
+- 이식 가이드는 `../docs/client-auth-copy-paste.md`를 참고하세요.
