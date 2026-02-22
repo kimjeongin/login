@@ -66,6 +66,14 @@ function isExtensionPageSender(sender: Browser.runtime.MessageSender): boolean {
   return url.startsWith(browser.runtime.getURL(''));
 }
 
+function isContentScriptSender(sender: Browser.runtime.MessageSender): boolean {
+  return typeof sender.tab?.id === 'number';
+}
+
+function isLoginAllowedSender(sender: Browser.runtime.MessageSender): boolean {
+  return isExtensionPageSender(sender) || isContentScriptSender(sender);
+}
+
 type RouterHandler = (
   message: ExtensionMessage,
   sender: Browser.runtime.MessageSender,
@@ -73,10 +81,10 @@ type RouterHandler = (
 
 const handlers: Record<ExtensionMessage['type'], RouterHandler> = {
   AUTH_LOGIN: async (_message, sender) => {
-    if (!isExtensionPageSender(sender)) {
+    if (!isLoginAllowedSender(sender)) {
       return failure(
         'FORBIDDEN_CONTEXT',
-        'Login is only allowed from extension pages.',
+        'Login is only allowed from extension pages or content scripts.',
       );
     }
     return success(await loginSession());

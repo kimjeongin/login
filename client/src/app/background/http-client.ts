@@ -26,6 +26,10 @@ function createErrorFromStatus(status: number, message: string) {
     return createBackgroundError('AUTH_REQUIRED', message);
   }
 
+  if (status === 403) {
+    return createBackgroundError('FORBIDDEN', message);
+  }
+
   return createBackgroundError('NETWORK', message);
 }
 

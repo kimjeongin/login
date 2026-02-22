@@ -4,6 +4,7 @@ import type { Project, ProjectCreatePayload } from '../../../entities/project/mo
 export type AppErrorCode =
   | 'AUTH_REQUIRED'
   | 'AUTH_FAILED'
+  | 'FORBIDDEN'
   | 'NETWORK'
   | 'VALIDATION'
   | 'FORBIDDEN_CONTEXT';
