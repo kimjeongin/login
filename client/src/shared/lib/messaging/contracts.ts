@@ -3,17 +3,24 @@ import type {
   AuthMessageResultMap,
 } from '../../../domains/auth/messaging/auth.contracts';
 import type {
+  ChatMessage,
+  ChatMessageResultMap,
+} from '../../../domains/chat/messaging/chat.contracts';
+import type {
   ProjectMessage,
   ProjectMessageResultMap,
 } from '../../../domains/projects/messaging/project.contracts';
 
 export * from './base-contracts';
 export * from '../../../domains/auth/messaging/auth.contracts';
+export * from '../../../domains/chat/messaging/chat.contracts';
 export * from '../../../domains/projects/messaging/project.contracts';
 
-export type ExtensionMessage = AuthMessage | ProjectMessage;
+export type ExtensionMessage = AuthMessage | ChatMessage | ProjectMessage;
 
-export type MessageResultMap = AuthMessageResultMap & ProjectMessageResultMap;
+export type MessageResultMap = AuthMessageResultMap &
+  ChatMessageResultMap &
+  ProjectMessageResultMap;
 
 export type MessageByType<T extends keyof MessageResultMap> = Extract<
   ExtensionMessage,

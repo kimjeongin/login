@@ -19,12 +19,14 @@ WXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
 WXT_PUBLIC_KEYCLOAK_BASE_URL=http://localhost:8080
 WXT_PUBLIC_KEYCLOAK_REALM=test
 WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
+WXT_PUBLIC_CHAT_A2A_HANDLER_NAME=chatbot
 ```
 
 ## 구성
 - `entrypoints/background.ts`: background 시작점
 - `src/app/background/*`: background 오케스트레이션(초기화, 메시지 라우터)
 - `src/domains/auth/*`: 인증 도메인(OAuth, 세션, 핸들러, 메시지 계약/클라이언트, validator)
+- `src/domains/chat/*`: 채팅 도메인(A2A client, 핸들러, 메시지 계약/클라이언트, validator)
 - `src/domains/projects/*`: 프로젝트 도메인(API, 핸들러, 메시지 계약/클라이언트, validator)
 - `src/shared/api/*`: 공통 API 호출 유틸(`requestAuthorizedJson`)
 - `src/shared/lib/messaging/*`: 메시지 공통 타입/런타임/에러 유틸
@@ -40,6 +42,7 @@ WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
 - `AUTH_GET_SESSION`: 현재 세션 조회
 - `AUTH_LOGIN`: Keycloak 로그인 시작
 - `AUTH_LOGOUT`: 세션 삭제
+- `CHAT_SEND`: A2A + Ollama 챗봇 요청
 - `PROJECT_LIST`: 프로젝트 목록 조회
 - `PROJECT_CREATE`: 프로젝트 생성
 

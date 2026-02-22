@@ -12,6 +12,7 @@ import {
 import {
   Card,
   CardDescription,
+  CardContent,
   CardHeader,
   CardTitle,
 } from '../../../shared/ui/card';
@@ -19,6 +20,10 @@ import { useAuth } from '../../../app/providers/AuthProvider';
 import { LogoutButton } from '../../../features/auth/logout/ui/LogoutButton';
 import { ProjectCreateForm } from '../../../features/project/create/ui/ProjectCreateForm';
 import { ProjectList } from '../../../features/project/list/ui/ProjectList';
+import { Button } from '../../../shared/ui/button';
+import { ChatPanel } from '../../chat-panel/ui/ChatPanel';
+
+type WorkspaceTab = 'projects' | 'chat';
 
 function toMessage(error: unknown, fallback: string): string {
   if (error instanceof MessagingClientError) {
@@ -35,6 +40,7 @@ function toMessage(error: unknown, fallback: string): string {
 export function ProjectDashboard() {
   const { session, logout, refreshSession, isWorking } = useAuth();
 
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('projects');
   const [projects, setProjects] = useState<Project[]>([]);
   const [isProjectsLoading, setIsProjectsLoading] = useState(false);
   const [isProjectSubmitting, setIsProjectSubmitting] = useState(false);
@@ -109,18 +115,42 @@ export function ProjectDashboard() {
         </CardHeader>
       </Card>
 
-      <ProjectCreateForm
-        isSubmitting={isProjectSubmitting}
-        error={projectsError}
-        onCreate={createNewProject}
-      />
+      <Card>
+        <CardContent className="grid grid-cols-2 gap-2 pt-4">
+          <Button
+            variant={activeTab === 'projects' ? 'default' : 'secondary'}
+            onClick={() => setActiveTab('projects')}
+            size="sm"
+          >
+            프로젝트
+          </Button>
+          <Button
+            variant={activeTab === 'chat' ? 'default' : 'secondary'}
+            onClick={() => setActiveTab('chat')}
+            size="sm"
+          >
+            채팅
+          </Button>
+        </CardContent>
+      </Card>
 
-      <ProjectList
-        projects={projects}
-        isLoading={isProjectsLoading}
-        error={projectsError}
-        onRefresh={loadProjects}
-      />
+      {activeTab === 'projects' ? (
+        <>
+          <ProjectCreateForm
+            isSubmitting={isProjectSubmitting}
+            error={projectsError}
+            onCreate={createNewProject}
+          />
+          <ProjectList
+            projects={projects}
+            isLoading={isProjectsLoading}
+            error={projectsError}
+            onRefresh={loadProjects}
+          />
+        </>
+      ) : (
+        <ChatPanel onAuthRequired={refreshSession} />
+      )}
     </div>
   );
 }

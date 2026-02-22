@@ -5,8 +5,12 @@ description = "FastAPI backend for browser extension login + project API"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "a2a-json-rpc==0.3",
+    "a2a-server>=0.6.1",
     "fastapi[standard]>=0.129.0",
     "httpx>=0.28.1",
+    "langchain>=1.2.10",
+    "langchain-ollama>=1.0.1",
     "pydantic-settings>=2.11.0",
     "python-jose[cryptography]>=3.5.0",
 ]

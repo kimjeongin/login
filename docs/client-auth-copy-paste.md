@@ -26,6 +26,14 @@ entrypoints/background.ts
 src/domains/projects/
 ```
 
+현재 프로젝트처럼 A2A 채팅까지 함께 쓸 경우 아래도 같이 복사합니다.
+
+```text
+src/entities/chat/
+src/domains/chat/
+src/widgets/chat-panel/
+```
+
 ## 2) 환경변수 추가
 `client/.env`에 아래 키를 맞춥니다.
 
@@ -34,6 +42,7 @@ WXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
 WXT_PUBLIC_KEYCLOAK_BASE_URL=http://localhost:8080
 WXT_PUBLIC_KEYCLOAK_REALM=test
 WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
+WXT_PUBLIC_CHAT_A2A_HANDLER_NAME=chatbot
 ```
 
 ## 3) 권한/호스트 설정
@@ -43,10 +52,10 @@ WXT_PUBLIC_KEYCLOAK_CLIENT_ID=extension-client
 - `host_permissions`: API 서버와 Keycloak 주소
 
 ## 4) 메시지 라우터 연결
-`src/app/background/message-router.ts`에서 도메인 등록 2개를 유지합니다.
+`src/app/background/message-router.ts`에서 도메인 등록을 유지합니다.
 
-- handlers 등록: `createAuthHandlers()`, 필요시 `createProjectHandlers()`
-- validator 등록: `createAuthMessageValidators()`, 필요시 `createProjectMessageValidators()`
+- handlers 등록: `createAuthHandlers()`, 필요시 `createProjectHandlers()`, `createChatHandlers()`
+- validator 등록: `createAuthMessageValidators()`, 필요시 `createProjectMessageValidators()`, `createChatMessageValidators()`
 
 도메인을 추가할 때는 handlers/validators를 같은 방식으로 merge하면 됩니다.
 
@@ -56,6 +65,7 @@ UI에서는 아래 함수만 사용합니다.
 - `requestAuthSession()`
 - `requestAuthLogin()`
 - `requestAuthLogout()`
+- (채팅 추가 시) `requestChatSend()`
 
 import 경로:
 
@@ -76,3 +86,9 @@ import {
 1. 로그인 후 `/api/*` 호출에 `Authorization: Bearer <access_token>`이 포함되는지
 2. access token 만료 시 자동 refresh 후 재시도되는지
 3. refresh 실패 시 `AUTH_REQUIRED`로 로그인 화면으로 복귀하는지
+4. (채팅 추가 시) `CHAT_SEND` 요청이 background에서만 A2A HTTP 호출을 수행하는지
+
+## 8) A2A 채팅 인증 이식
+A2A 채팅까지 다른 프로젝트로 옮길 때는 아래 문서를 함께 참고합니다.
+
+- `a2a-auth-copy-paste.md`

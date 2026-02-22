@@ -1,7 +1,7 @@
 # Server
 
 FastAPI 기반 API 서버입니다.  
-Keycloak access token을 검증하고 `active` role 권한을 확인한 뒤 프로젝트 API를 제공합니다.
+Keycloak access token을 검증하고 `active` role 권한을 확인한 뒤 프로젝트 API와 A2A 챗봇 API를 제공합니다.
 
 ## 실행
 ```bash
@@ -20,6 +20,12 @@ KEYCLOAK_JWKS_CACHE_TTL_SECONDS=300
 AUTH_REQUIRED_ROLE=active
 CORS_ALLOW_ORIGINS=*
 API_PREFIX=/api
+CHAT_A2A_HANDLER_NAME=chatbot
+CHAT_OLLAMA_BASE_URL=http://localhost:11434
+CHAT_OLLAMA_MODEL=qwen3:8b
+CHAT_OLLAMA_TEMPERATURE=0.2
+CHAT_RESPONSE_TIMEOUT_SECONDS=60
+CHAT_HISTORY_MAX_MESSAGES=12
 ```
 
 - `KEYCLOAK_EXPECTED_AUDIENCE`가 비어 있으면 audience 검증을 비활성화합니다.
@@ -30,6 +36,8 @@ API_PREFIX=/api
 - `GET /health`
 - `GET /api/projects` (인증 + `active` role 필요)
 - `POST /api/projects` (인증 + `active` role 필요)
+- `GET /api/chat/a2a/<handler>/.well-known/agent.json` (인증 + `active` role 필요)
+- `POST /api/chat/a2a/<handler>` (`tasks/send`, `tasks/get` 등 A2A RPC, 인증 + `active` role 필요)
 
 ## 모듈 구조
 ```text
@@ -49,6 +57,10 @@ app/
     presentation/
       dependencies.py
       http_errors.py
+  chat/
+    infrastructure/
+      a2a_app_factory.py
+      langchain_chat_handler.py
   projects/
     domain/
       models.py

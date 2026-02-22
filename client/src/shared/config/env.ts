@@ -4,6 +4,7 @@ const keycloakBaseUrl = env.WXT_PUBLIC_KEYCLOAK_BASE_URL ?? 'http://localhost:80
 const keycloakRealm = env.WXT_PUBLIC_KEYCLOAK_REALM ?? 'test';
 
 export const API_BASE_URL = env.WXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000/api';
+export const CHAT_A2A_HANDLER_NAME = env.WXT_PUBLIC_CHAT_A2A_HANDLER_NAME ?? 'chatbot';
 export const KEYCLOAK_CLIENT_ID = env.WXT_PUBLIC_KEYCLOAK_CLIENT_ID ?? 'extension-client';
 export const KEYCLOAK_ISSUER = `${keycloakBaseUrl.replace(/\/$/, '')}/realms/${keycloakRealm}`;
 export const KEYCLOAK_AUTH_URL = `${KEYCLOAK_ISSUER}/protocol/openid-connect/auth`;
