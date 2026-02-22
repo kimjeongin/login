@@ -40,6 +40,7 @@ class KeycloakTokenVerifier:
             header = jwt.get_unverified_header(access_token)
             key_id = header.get("kid")
             claims = await self._decode_with_jwks(access_token, key_id)
+            print("Decoded JWT claims:", claims)  # Debug log for claims
         except JWTError as error:
             raise UnauthorizedError("Invalid or expired access token.") from error
 

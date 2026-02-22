@@ -30,12 +30,12 @@ async def get_current_principal(
         raise to_http_exception(error) from error
 
 
-async def get_current_active_extension_principal(
+async def get_current_authorized_principal(
     current_principal: AuthenticatedPrincipal = Depends(get_current_principal),
     auth_service: AuthService = Depends(get_auth_service),
 ) -> AuthenticatedPrincipal:
     try:
-        auth_service.authorize_extension_user(current_principal)
+        auth_service.authorize_user(current_principal)
     except AuthError as error:
         raise to_http_exception(error) from error
     return current_principal

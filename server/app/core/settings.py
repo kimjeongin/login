@@ -1,9 +1,9 @@
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Extension Login API"
+    app_name: str = "Login API"
     api_prefix: str = "/api"
     debug: bool = False
 
@@ -12,8 +12,7 @@ class Settings(BaseSettings):
     keycloak_expected_audience: str = Field(default="")
     keycloak_verify_ssl: bool = Field(default=False)
     keycloak_jwks_cache_ttl_seconds: int = Field(default=300, ge=30)
-    extension_required_role: str = Field(default="active")
-
+    auth_required_role: str = Field(default="active")
     cors_allow_origins: str = Field(default="*")
 
     model_config = SettingsConfigDict(
@@ -39,8 +38,8 @@ class Settings(BaseSettings):
         return audience
 
     @property
-    def required_extension_role(self) -> str:
-        return self.extension_required_role.strip()
+    def required_role(self) -> str:
+        return self.auth_required_role.strip()
 
     def cors_origins(self) -> list[str]:
         raw = self.cors_allow_origins.strip()

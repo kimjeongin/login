@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.domain.principal import AuthenticatedPrincipal
-from app.auth.presentation.dependencies import get_current_active_extension_principal
+from app.auth.presentation.dependencies import get_current_authorized_principal
 from app.core.dependencies import get_project_service
 from app.projects.presentation.schemas import (
     ProjectCreateRequest,
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 
 CurrentPrincipal = Annotated[
     AuthenticatedPrincipal,
-    Depends(get_current_active_extension_principal),
+    Depends(get_current_authorized_principal),
 ]
 ProjectServiceDep = Annotated[ProjectService, Depends(get_project_service)]
 

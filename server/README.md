@@ -17,7 +17,7 @@ KEYCLOAK_REALM=test
 KEYCLOAK_EXPECTED_AUDIENCE=extension-client
 KEYCLOAK_VERIFY_SSL=false
 KEYCLOAK_JWKS_CACHE_TTL_SECONDS=300
-EXTENSION_REQUIRED_ROLE=active
+AUTH_REQUIRED_ROLE=active
 CORS_ALLOW_ORIGINS=*
 API_PREFIX=/api
 ```
@@ -85,7 +85,7 @@ app/
 4. groups는 `groups` 클레임에서 문자열만 수집
 
 ### 4) 권한 검증
-1. `ExtensionAccessPolicy(required_role=EXTENSION_REQUIRED_ROLE)` 적용
+1. `RoleAccessPolicy(required_role=AUTH_REQUIRED_ROLE)` 적용
 2. principal에 설정된 role이 없으면 `403`
 
 ### 5) 비즈니스 처리
